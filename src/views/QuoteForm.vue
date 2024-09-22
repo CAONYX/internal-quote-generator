@@ -92,6 +92,9 @@
 .custom-button:hover {
   background-color: #0056b3;
 }
+input[type="checkbox"] {
+  display: inline;
+}
 </style>
 
 
@@ -106,7 +109,7 @@ export default {
     data() {
         return {
 
-        company: 'Caonyx LTD - HE 460570',
+        company: 'Caonyx LTD',
         address: `Achelloou 2, Aradippou`,
         municipality: "Larnaca",
         post: '7103',
@@ -114,14 +117,18 @@ export default {
         phone: '+357 97750012',
         email: 'info@caonyx.com',
         bill_to: '\n',
-        invoice_num: '',
+        num: '',
         terms: 'cheque',
         tax_id: '60087675R',
+        type: 'QUOTE',
         tax: 0,
         title: ' ',
         description: '',
         amount: 0,
         amount_at: 0,
+        discount: 0,
+        amount_ad: 0,
+        show_discount: false,
         date: new Date().toISOString().substring(0, 10),
         items: [
             { description: '', rate: 0, quantity: 0, price: 0 },
@@ -142,8 +149,10 @@ export default {
             this.amount = items.reduce((acc, item) => acc + item.price, 0);
         },
         calculateTotalAfterTax() {
-            this.amount_at = this.amount + (this.amount * this.tax / 100);
-            
+            this.amount_at = this.amount_ad + (this.amount_ad * this.tax / 100);
+        },
+        calculateTotalAfterDiscount(){ 
+          this.amount_ad = this.amount - (this.amount * (this.discount/100))
         },
         generateQuote() {
             var docDefinition = {
@@ -152,8 +161,8 @@ export default {
                     columns: [
                       {
                         stack: [
-                          { text: 'INVOICE', style: 'header', fontSize: 32 },
-                          { text: `#INV${this.invoice_num}`, fontSize: 14, margin: [0, 0, 0, 0], color: "#bdbdbd"},
+                          { text: this.type, style: 'header', fontSize: 32 },
+                          { text: `#${this.type}${this.num}`, fontSize: 14, margin: [0, 0, 0, 0], color: "#bdbdbd"},
                           
                         ]
                       }
@@ -243,18 +252,20 @@ export default {
                       }, 
                       table: {
                         headerRows: 1,
-                        widths: [ 300, 50, 100, 100 ],
+                        widths: [ 290, 50, 80, 75 ],
                         body: [
-                          [ {text:'Item', color: "#FFFFFF"}, {text:'Quantity', color: "#FFFFFF", alignment: 'right'}, {text:'Rate', color: "#FFFFFF", alignment: 'right'}, {text:'Amount', color: "#FFFFFF", alignment: 'centered'} ],
+                          [ {text:'Item', color: "#FFFFFF"}, {text:'Quantity', color: "#FFFFFF", alignment: 'right'}, {text:'Rate', color: "#FFFFFF", alignment: 'right'}, {text:'Amount', color: "#FFFFFF", alignment: 'right'} ],
                           ...this.items.map(item =>{ 
-                            return [{text: item.description, alignment:'left', lineHeight: 1.5}, {text: item.quantity, alignment:'right', lineHeight: 1.5}, {text: item.rate, alignment:'right', lineHeight: 1.5}, {text: item.price, lineHeight: 1.5}];
+                            return [{text: item.description, alignment:'left', lineHeight: 1.5}, {text: item.quantity, lineHeight: 1.5, alignment: 'right'}, {text: `€${item.rate}`, alignment:'right', lineHeight: 1.5}, {text: ` €${item.price}`, lineHeight: 1.5, alignment:'right'}];
                           })
 
                         ],
                       },
                    },
-                   {text: `Total Amount: ${this.amount}`, style: 'subheader', margin: [0, 40, 0, 0]},
-                    {text: `Total Amount After Tax: ${this.amount_at}`, style: 'subheader', margin: [0, 10, 0, 0]},
+                   {text: `Total Amount: €${this.amount}`, style: 'subheader', margin: [0, 40, 0, 0]},
+                   {text: `Discount: %${this.discount}`, style: 'subheader', margin: [0, 5, 0, 0]}, //Todo make a function that allows you to show discount field or not
+                   {text: `VAT: %${this.tax}`, style: 'subheader', margin: [0, 10, 0, 0]},
+                   {text: `Total Amount After VAT: €${this.amount_at}`, style: 'subheader', margin: [0, 10, 0, 0]},
                 ],
             };
             pdfMake.createPdf(docDefinition, null, null, pdfFonts.pdfMake.vfs).open();
@@ -270,6 +281,16 @@ export default {
     <form class="form-container">
 
       <div class="row">
+
+        <div class="col-md-6 mb-3">
+          <label for="type">Type</label>
+          <select v-model="type" type="text" id="type" >
+            <option value="QUOTE">Quote</option>
+            <option value="INVOICE">Invoice</option>
+          </select>
+        </div>
+
+        
         <div class="col-md-6 mb-3">
           <label for="author">Company</label>
           <input v-model="company" type="text" id="author" />
@@ -329,6 +350,7 @@ export default {
       <div class="mb-3">
         <label for="inv-num">Payment terms</label>
         <select v-model="terms">
+          <option value="cheque"></option>
           <option value="cheque">Cheque</option>
           <option value="cash">Cash</option>
           <option value="cash">Bank Transfer</option>
@@ -343,14 +365,25 @@ export default {
           <input v-model="tax_id" type="text" id="tax_id" />
         </div>
         <div class="col-md-4 mb-3">
-          <label for="tax">Tax (%)</label>
+          <label for="tax">VAT (%)</label>
           <input v-model="tax" @input="calculateTotalAfterTax()" type="number" id="tax" />
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <label for="discount">Discount</label>
+          <input v-model="discount" @input="calculateTotalAfterDiscount()" type="number" id="discount" />
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <label for="show_discount">Show Discount</label>
+          <input v-model="show_discount" type="checkbox" id="show_discount" />
+
         </div>
       </div>
       
       <div class="mb-3">
-        <label for="inv-num">Invoice Number</label>
-        <input v-model="invoice_num" type="text" id="inv-num" />
+        <label for="num">Invoice/Quote Number</label>
+        <input v-model="num" type="text" id="num" />
       </div>
   
       <div class="table-container">
@@ -378,9 +411,14 @@ export default {
           <label for="amount">Total Amount</label>
           <input v-model="amount" type="number" id="amount" readonly />
         </div>
+        
+        <div class="col-md-4 mb-3">
+          <label for="amount_ad">Total Amount After Discount</label>
+          <input v-model="amount_ad" type="number" id="amount_ad" readonly />
+        </div>
 
         <div class="col-md-4 mb-3">
-          <label for="amount_at">Total Amount After Tax</label>
+          <label for="amount_at">Total Amount After VAT</label>
           <input v-model="amount_at" type="number" id="amount_at" readonly />
         </div>
 
