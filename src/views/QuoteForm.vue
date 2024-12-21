@@ -1,12 +1,10 @@
 <style scoped>
-/* Container spacing */
 .form-container {
   max-width: 900px;
   margin: 0 auto;
   padding: 20px;
 }
 
-/* Form styling */
 .form-container input,
 .form-container textarea {
   width: 100%;
@@ -37,7 +35,6 @@
   resize: none;
 }
 
-/* Table styling */
 .table-container {
   margin-top: 20px;
 }
@@ -126,6 +123,7 @@ export default {
         description: '',
         amount: 0,
         amount_at: 0,
+        dissable_vat: false,
         discount: 0,
         amount_ad: 0,
         show_discount: false,
@@ -133,8 +131,6 @@ export default {
         items: [
             { description: '', rate: 0, quantity: 0, price: 0 },
         ],};
-
-
     },
     methods: {
         addItem() {
@@ -143,17 +139,42 @@ export default {
         calculatePrice(item) {
           item.price = item.rate * item.quantity;
           this.calculateTotal(this.items);
-          this.calculateTotalAfterTax();
+          this.calculateFinalAmount(); 
         },
+
+        calcuateItemsPrices() { 
+          for (let i = 0; i < this.items.length; i++) {
+            this.items[i].price = this.items[i].rate * this.items[i].quantity;
+          }
+        },
+
         calculateTotal(items) {
-            this.amount = items.reduce((acc, item) => acc + item.price, 0);
+          this.amount = items.reduce((acc, item) => acc + item.price, 0);
         },
+
+        calculateFinalAmount() {
+          let finalAmount = this.amount;
+
+          if (this.show_discount && this.discount > 0) {
+            finalAmount -= finalAmount * (this.discount / 100);
+          }
+
+          this.amount_ad = finalAmount;
+
+          if (!this.dissable_vat) {
+            finalAmount += finalAmount * (this.tax / 100);
+          }
+          this.amount_at = finalAmount;
+        },
+
         calculateTotalAfterTax() {
-            this.amount_at = this.amount_ad + (this.amount_ad * this.tax / 100);
+          this.calculateFinalAmount();
         },
-        calculateTotalAfterDiscount(){ 
-          this.amount_ad = this.amount - (this.amount * (this.discount/100))
+
+        calculateTotalAfterDiscount() { 
+          this.calculateFinalAmount();
         },
+
         generateQuote() {
             var docDefinition = {
                 content: [
@@ -262,10 +283,24 @@ export default {
                         ],
                       },
                    },
-                   {text: `Total Amount: €${this.amount}`, style: 'subheader', margin: [0, 40, 0, 0]},
-                   {text: `Discount: %${this.discount}`, style: 'subheader', margin: [0, 5, 0, 0]}, //Todo make a function that allows you to show discount field or not
-                   {text: `VAT: %${this.tax}`, style: 'subheader', margin: [0, 10, 0, 0]},
-                   {text: `Total Amount After VAT: €${this.amount_at}`, style: 'subheader', margin: [0, 10, 0, 0]},
+
+                   this.show_discount ? 
+                    {text: `Discount: ${this.discount}%`, style: 'subheader', margin: [0, 40, 0, 0]}
+                    : null ,
+                  
+                    !this.show_discount
+                    ? [{ text: `Total Amount: €${this.amount}`, style: 'subheader', margin: [0, 40, 0, 0] }]
+                    : [
+                        { text: `Total Amount: €${this.amount}`, style: 'subheader', margin: [0, 40, 0, 0] },
+                        { text: `Total Amount after discount: €${this.amount_ad}`, style: 'subheader', margin: [0, 10, 0, 0] }
+                      ],
+                   {text: `VAT: ${this.dissable_vat ? "N/A" : this.tax + "%"}`, style: 'subheader', margin: [0, 10, 0, 0]},
+                   this.dissable_vat ? 
+                    null
+                    : 
+                    {text: `Total Amount After VAT: €${this.tax }`, style: 'subheader', margin: [0, 10, 0, 0]},
+                   {text: `Notes: ${this.description}`, style: 'subheader', margin: [0, 30, 0, 0], fontSize: 10}, //Todo make a function that allows you to show discount field or not
+
                 ],
             };
             pdfMake.createPdf(docDefinition, null, null, pdfFonts.pdfMake.vfs).open();
@@ -289,7 +324,6 @@ export default {
             <option value="INVOICE">Invoice</option>
           </select>
         </div>
-
         
         <div class="col-md-6 mb-3">
           <label for="author">Company</label>
@@ -350,13 +384,11 @@ export default {
       <div class="mb-3">
         <label for="inv-num">Payment terms</label>
         <select v-model="terms">
-          <option value="cheque"></option>
-          <option value="cheque">Cheque</option>
-          <option value="cash">Cash</option>
-          <option value="cash">Bank Transfer</option>
-
+          <option value=""></option>
+          <option value="Cheque">Cheque</option>
+          <option value="Cash">Cash</option>
+          <option value="Bank Transfer">Bank Transfer</option>
         </select>
-       
       </div>
 
       <div class="row">
@@ -370,6 +402,11 @@ export default {
         </div>
 
         <div class="col-md-4 mb-3">
+          <label for="disable_vat">Disable Vat</label>
+          <input v-model="dissable_vat" type="checkbox" id="disable_vat" />
+        </div>
+
+        <div class="col-md-4 mb-3">
           <label for="discount">Discount</label>
           <input v-model="discount" @input="calculateTotalAfterDiscount()" type="number" id="discount" />
         </div>
@@ -377,7 +414,6 @@ export default {
         <div class="col-md-4 mb-3">
           <label for="show_discount">Show Discount</label>
           <input v-model="show_discount" type="checkbox" id="show_discount" />
-
         </div>
       </div>
       
@@ -428,5 +464,4 @@ export default {
 
       </div>
     </form>
-  </template>
-  
+</template>
