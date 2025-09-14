@@ -1,0 +1,16 @@
+services:
+  invoice-generator:
+    build: .
+    image: nikolasth90/invoice-generator:latest
+    container_name: invoice-generator
+    restart: unless-stopped
+    networks:
+      - proxy-network
+    labels:
+      - "com.docker.compose.project=invoice-generator"
+    # ports:
+    #   - "5173:5173"
+
+networks:
+  proxy-network:
+    external: true
