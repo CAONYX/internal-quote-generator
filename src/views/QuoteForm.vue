@@ -106,7 +106,7 @@ export default {
     data() {
         return {
 
-        company: 'Caonyx LTD',
+        company: 'AXIOT LTD',
         address: `Achelloou 2, Aradippou`,
         municipality: "Larnaca",
         post: '7103',
@@ -195,31 +195,31 @@ export default {
                             {
                                 width: 200,
                                 svg: logo,
-                                margin: [20, -60, 0, 0],
+                                margin: [20, -90, 0, 0],
                             },
                         ],                        
                         margin: [0, 0, 0, 40],
                     },
-                    {text: 'Issued by:', color: "#bdbdbd"},
+                    {text: 'Issued by:', fontSize: 14, color: "#bdbdbd"},
                     {text: this.company, bold: true, fontSize: 12, margin:[0,5,0,0]},
-                    {text: this.address, fontSize: 12, margin: [0, 5, 0, 0]},
-                    {text: `${this.post} ${this.country} ${this.municipality}`, fontSize: 12, margin: [0, 5, 0, 0]},
+                    {text: this.address, fontSize: 8, margin: [0, 5, 0, 0]},
+                    {text: `${this.post} ${this.country} ${this.municipality}`, fontSize: 8, margin: [0, 5, 0, 0]},
 
-                    {text: this.phone, fontSize: 12, margin: [0, 5, 0, 0]},
-                    {text: this.email, fontSize: 12, margin: [0, 5, 0, 0]},
+                    {text: `T: ${this.phone}`, fontSize: 10, margin: [0, 15, 0, 0]},
+                    {text: `E: ${this.email}`, fontSize: 10, margin: [0, 5, 0, 0]},
                     {
                       margin:[0,5,0,0],
                       columns :
                       [ 
-                        { text: "Tax ID:", color: "#bdbdbd" , margin:[0,3,0,0]}, 
-                        {text: this.tax_id, fontSize: 10, margin:[-218,5,0,0]} 
+                        { text: " ",  fontSize: 10, margin:[0,3,0,0]}, 
+                        {text: " ", color: "#bdbdbd", fontSize: 10, margin:[-225,4,0,0]} 
                       ],
                     },
                     {
                       columns:
                       [ 
-                        { text: 'Reg Number:', color: "#bdbdbd" , margin:[0,3,0,0]}, 
-                        {text: "HE 460570", fontSize: 10, margin:[-185,5,0,0]}
+                        { text: ' ',  fontSize: 10, margin:[0,3,0,0]}, 
+                        {text: " ", color: "#bdbdbd" , fontSize: 10, margin:[-195,4,0,0]}
                       ],
 
                     },
@@ -241,14 +241,14 @@ export default {
                             },
                       ],
                     },
-                    {text: `Bill To: ${this.bill_to}`, style: 'subheader', margin: [0, 20, 0, 28], color: "#5c5c5c", fontSize: 14},
+                    {text: `Bill To: ${this.bill_to}`, style: 'subheader', margin: [0, 20, 0, 28], color: "#000000", fontSize: 14},
                     {text: this.title, fontSize: 18},
                     {canvas: 
                       [
                       { 
                         type: 'rect',
                         x: -15,
-                        y: 0,
+                        y: 15,
                         w: 560,
                         h: 18,
                         r: 5,
